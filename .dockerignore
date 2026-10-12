@@ -15,6 +15,14 @@ __pycache__
 
 # Environment and secrets
 .env
+.env.*
+!.env.example
+.venv/
+venv/
+env/
+*.log
+*.pem
+*.key
 *.env.local
 *.env.*.local
 
@@ -25,6 +33,8 @@ data/
 # Storage artifacts (mounted as volumes)
 backend/app/storage/media/*
 backend/app/storage/exports/*
+backend/app/storage/
+frontend/dist/
 
 # IDE and editor
 .vscode

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import os
 from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import engine_from_config, event, pool, text
 
 from backend.app.core.database import Base
+from backend.app.core.config import get_settings
 import backend.app.models  # noqa: F401
 
 config = context.config
@@ -17,7 +17,8 @@ target_metadata = Base.metadata
 
 
 def _get_url() -> str:
-    return os.environ.get("DATABASE_URL", config.get_main_option("sqlalchemy.url"))
+    # 与 ORM 共用规范化后的连接地址，避免容器环境中的 asyncpg DSN 进入同步迁移。
+    return get_settings().database_url
 
 
 def run_migrations_offline() -> None:

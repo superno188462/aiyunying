@@ -128,6 +128,11 @@ class Settings(BaseSettings):
     if hasattr(BaseSettings, "model_config"):
         model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
+    @classmethod
+    def settings_customise_sources(cls, settings_cls, init_settings, env_settings, dotenv_settings, file_secret_settings):
+        """环境变量和 .env 优先于传入的 YAML 默认配置，支持容器部署覆盖。"""
+        return env_settings, dotenv_settings, init_settings, file_secret_settings
+
     def model_post_init(self, __context: Any) -> None:
         # The existing ORM uses a synchronous Session. Accept the supplied
         # asyncpg-style DSN while selecting the synchronous psycopg driver.

@@ -55,7 +55,8 @@ def _run_alembic_migrations() -> None:
             return
 
         alembic_cfg = Config(ini_path)
-        alembic_cfg.set_main_option("sqlalchemy.url", settings.database_url)
+        # ConfigParser 将 % 视为插值标记，URL 编码后的数据库密码需要转义。
+        alembic_cfg.set_main_option("sqlalchemy.url", settings.database_url.replace("%", "%%"))
 
         inspector = inspect(engine)
         has_tables = bool(inspector.get_table_names())

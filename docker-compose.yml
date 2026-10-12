@@ -1,32 +1,40 @@
+name: aiyunying
 services:
   # --------------------------------------------------------------------------
   # Spider_XHS Application
   # --------------------------------------------------------------------------
   app:
-    build: .
-    container_name: spider-xhs
+    image: aiyunying:${IMAGE_TAG:-local}
+    build:
+      context: .
+    init: true
     ports:
-      - "8000:8000"
+      - "${APP_BIND_HOST:-0.0.0.0}:${APP_PORT:-8000}:8000"
     volumes:
-      - ./data:/app/data
-      - ./config:/app/config
-      - ./backend/app/storage/media:/app/backend/app/storage/media
-      - ./backend/app/storage/exports:/app/backend/app/storage/exports
-      - ./backend/app/storage/content_cards:/app/backend/app/storage/content_cards
+      - app_data:/app/data
+      - app_storage:/app/backend/app/storage
     env_file:
       - .env
     environment:
-      - CONFIG_FILE=/app/config/default.yaml
-      # Override sensitive values via env vars in production:
-      # - SECRET_KEY=your-production-secret-key
-      # - FERNET_KEY=your-fernet-key
-      # - DATABASE_TYPE=mysql
-      # - DATABASE_MYSQL_HOST=mysql
-      # - DATABASE_MYSQL_PASSWORD=your-mysql-password
+      DATABASE_URL: ${DATABASE_URL:?请在 .env 中填写 PostgreSQL 连接地址}
+      SECRET_KEY: ${SECRET_KEY:?请在 .env 中填写固定的随机密钥}
+      FRONTEND_SERVE_STATIC: "true"
+      FRONTEND_BUILD_DIR: /app/frontend/dist
+      CONFIG_FILE: /app/config/default.yaml
+      TZ: Asia/Shanghai
     restart: unless-stopped
+    stop_grace_period: 5m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=4)"]
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 60s
+volumes:
+  app_data:
+  app_storage:
