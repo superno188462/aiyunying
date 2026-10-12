@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { ContentWorkflow } from "../types/content-workflow";
 import { message } from "antd";
 
 import { fallbackPlatforms } from "./platforms";
@@ -133,7 +134,15 @@ http.interceptors.response.use(
     if (error.response?.status !== 401 || originalRequest?._authRetry || !getRefreshToken()) {
       if (!originalRequest?._silent) {
         const detail = error.response?.data?.detail;
-        const msg = typeof detail === "string" ? detail : "请求失败，请稍后重试";
+        const msg = typeof detail === "string"
+          ? detail
+          : typeof detail?.message === "string"
+            ? detail.message
+            : error.code === "ECONNABORTED"
+              ? "请求超时，请稍后重试"
+              : error.response?.status
+                ? `请求失败（HTTP ${error.response.status}），请稍后重试`
+                : "无法连接后端服务，请检查服务是否正在运行";
         message.error(msg);
       }
       return Promise.reject(error);
@@ -874,3 +883,24 @@ export async function runAutoTask(taskId: number): Promise<AutoTaskRunResult> {
   const response = await http.post<AutoTaskRunResult>(`/auto-tasks/${taskId}/run`);
   return response.data;
 }
+
+/** Typed, centralized API client for the human-reviewed content workflow. */
+export const contentWorkflowApi = {
+  list: async (): Promise<ContentWorkflow[]> => (await http.get<ContentWorkflow[]>("/content-workflows")).data,
+  get: async (id: number): Promise<ContentWorkflow> => (await http.get<ContentWorkflow>(`/content-workflows/${id}`)).data,
+  create: async (topic: string, account_id: number): Promise<ContentWorkflow> => (await http.post<ContentWorkflow>("/content-workflows", { topic, account_id })).data,
+  createManual: async (topic: string, references: Array<{ title: string; content: string; note_url: string; likes: number | null; collects: number | null; comments: number | null }>): Promise<ContentWorkflow> =>
+    (await http.post<ContentWorkflow>("/content-workflows/manual", { topic, references })).data,
+  research: async (id: number, version: number): Promise<ContentWorkflow> => (await http.post<ContentWorkflow>(`/content-workflows/${id}/research`, { version })).data,
+  topics: async (id: number, version: number): Promise<ContentWorkflow> => (await http.post<ContentWorkflow>(`/content-workflows/${id}/topics`, { version })).data,
+  selectTopic: async (id: number, version: number, index: number): Promise<ContentWorkflow> => (await http.post<ContentWorkflow>(`/content-workflows/${id}/select-topic`, { version, index })).data,
+  generateDraft: async (id: number, version: number, feedback: string): Promise<ContentWorkflow> => (await http.post<ContentWorkflow>(`/content-workflows/${id}/draft/generate`, { version, feedback })).data,
+  saveDraft: async (id: number, version: number, title: string, body: string): Promise<ContentWorkflow> => (await http.put<ContentWorkflow>(`/content-workflows/${id}/draft`, { version, title, body })).data,
+  approveDraft: async (id: number, version: number): Promise<ContentWorkflow> => (await http.post<ContentWorkflow>(`/content-workflows/${id}/draft/approve`, { version })).data,
+  generateCards: async (id: number, version: number): Promise<ContentWorkflow> => (await http.post<ContentWorkflow>(`/content-workflows/${id}/cards/generate`, { version }, { timeout: 900000 })).data,
+  updateCard: async (id: number, index: number, version: number, headline: string, body: string): Promise<ContentWorkflow> => (await http.put<ContentWorkflow>(`/content-workflows/${id}/cards/${index}`, { version, headline, body })).data,
+  regenerateCardVisual: async (id: number, index: number, version: number, visual_prompt: string): Promise<ContentWorkflow> =>
+    (await http.post<ContentWorkflow>(`/content-workflows/${id}/cards/${index}/visual/regenerate`, { version, visual_prompt }, { timeout: 240000 })).data,
+  image: async (id: number, index: number, version: number): Promise<Blob> => (await http.get<Blob>(`/content-workflows/${id}/cards/${index}/image`, { responseType: "blob", params: { v: version } })).data,
+  export: async (id: number): Promise<Blob> => (await http.get<Blob>(`/content-workflows/${id}/export`, { responseType: "blob" })).data,
+};

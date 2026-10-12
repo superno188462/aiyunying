@@ -37,6 +37,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libgl1-mesa-glx \
     libglib2.0-0 \
+    fonts-noto-cjk \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js runtime (required for JS signature execution)
@@ -58,7 +59,7 @@ COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 RUN if [ -f package.json ]; then npm install --no-audit --no-fund --omit=dev; fi
 
 # Create data directory for SQLite and storage
-RUN mkdir -p /app/data /app/backend/app/storage/media /app/backend/app/storage/exports
+RUN mkdir -p /app/data /app/backend/app/storage/media /app/backend/app/storage/exports /app/backend/app/storage/content_cards
 
 # Set environment defaults
 ENV PYTHONUNBUFFERED=1 \

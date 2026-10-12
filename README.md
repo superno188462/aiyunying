@@ -10,6 +10,8 @@
 
 # XHS_ALL_IN_ONE
 
+> 新增人工审核的“内容策划”流程：热门参考 → AI 选题 → 公众号文案审核 → 3–5 张小红书图片 → 双平台发布包。部署和接口说明见 [docs/content-workflow.md](docs/content-workflow.md)。
+
 **小红书一站式智能运营平台 — 采集、分析、AI 创作、自动发布，全链路闭环**
 
 [![Skills](https://img.shields.io/badge/skills-supported-success)](https://github.com/cv-cat/XhsSkills)

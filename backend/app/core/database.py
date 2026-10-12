@@ -75,11 +75,12 @@ def _normalize_model_config_names(bind) -> None:
     if "model_configs" not in table_names:
         return
 
+    timestamp_type = "TIMESTAMP" if bind.dialect.name == "postgresql" else "DATETIME"
     with bind.begin() as connection:
         connection.execute(
             text(
                 "CREATE TABLE IF NOT EXISTS app_migrations ("
-                "name VARCHAR(128) PRIMARY KEY, applied_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL)"
+                f"name VARCHAR(128) PRIMARY KEY, applied_at {timestamp_type} DEFAULT CURRENT_TIMESTAMP NOT NULL)"
             )
         )
         applied = connection.execute(

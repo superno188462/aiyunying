@@ -23,6 +23,7 @@ import { XhsImageStudioPage } from "../pages/platforms/xhs/image-studio-page";
 import { XhsPublishPage } from "../pages/platforms/xhs/publish-page";
 import { XhsVideoStudioPage } from "../pages/platforms/xhs/video-studio-page";
 import { XhsSectionPage } from "../pages/platforms/xhs/xhs-section-page";
+import { XhsContentWorkflowPage } from "../pages/platforms/xhs/content-workflow-page";
 
 export function AppRouter() {
   return (
@@ -68,6 +69,7 @@ export function AppRouter() {
           <Route path="/platforms/xhs/keywords" element={<XhsKeywordsPage />} />
           <Route path="/platforms/xhs/library" element={<XhsLibraryPage />} />
           <Route path="/platforms/xhs/drafts" element={<XhsDraftsPage />} />
+          <Route path="/platforms/xhs/content-workflow" element={<XhsContentWorkflowPage />} />
           <Route path="/platforms/xhs/benchmarks" element={<XhsBenchmarksPage />} />
           <Route path="/platforms/xhs/image-studio" element={<XhsImageStudioPage />} />
           <Route path="/platforms/xhs/video-studio" element={<XhsVideoStudioPage />} />

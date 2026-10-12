@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Literal
 
 try:
     from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -111,6 +111,16 @@ class Settings(BaseSettings):
     # Asset storage
     asset_storage_type: str = "local"
 
+    # Content workflow AI gateway (server-side only)
+    gateway_base_url: str = "http://119.45.48.180:8080/gateway"
+    gateway_api_key: str = ""
+    gateway_model: str = ""
+    ark_api_key: str = ""
+    ark_image_url: str = "https://ark.cn-beijing.volces.com/api/v3/images/generations"
+    ark_image_model: str = "doubao-seedream-5-0-pro-260628"
+    ark_image_speed: Literal["fast", "standard"] = "fast"
+    ark_image_size: str = "1K"
+
     # Frontend static serving
     frontend_serve_static: bool = False
     frontend_build_dir: str = "./frontend/dist"
@@ -119,6 +129,14 @@ class Settings(BaseSettings):
         model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     def model_post_init(self, __context: Any) -> None:
+        # The existing ORM uses a synchronous Session. Accept the supplied
+        # asyncpg-style DSN while selecting the synchronous psycopg driver.
+        if self.database_url.startswith("postgresql+asyncpg://"):
+            object.__setattr__(
+                self,
+                "database_url",
+                self.database_url.replace("postgresql+asyncpg://", "postgresql+psycopg://", 1),
+            )
         # Build database_url from component fields if not explicitly set
         if not self.database_url:
             if self.database_type == "mysql":
